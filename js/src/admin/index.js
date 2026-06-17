@@ -17,7 +17,7 @@ function allowGuest(items, key) {
 }
 
 app.initializers.add('guest-posting', () => {
-    app.extensionData.for('kilowhat-guest-posting')
+    app.registry.for('convo-extensions-guest-posting')
         .registerSetting({
             type: 'switch',
             setting: settingsPrefix + 'enableImport',
@@ -46,7 +46,7 @@ app.initializers.add('guest-posting', () => {
         });
 
     function extendStartItems(items) {
-        allowGuest(items, 'start');
+        allowGuest(items, 'startDiscussion');
         allowGuest(items, 'discussion.startWithoutApproval');
     }
 
@@ -56,10 +56,8 @@ app.initializers.add('guest-posting', () => {
     extend(ExtensionPermissionGrid.prototype, 'startItems', extendStartItems);
 
     function extendReplyItems(items) {
-        allowGuest(items, 'reply');
+        allowGuest(items, 'discussion.reply');
         allowGuest(items, 'discussion.replyWithoutApproval');
-        allowGuest(items, 'votePolls');
-        allowGuest(items, 'changeVotePolls');
         allowGuest(items, 'fof-recaptcha.postWithoutCaptcha');
     }
 

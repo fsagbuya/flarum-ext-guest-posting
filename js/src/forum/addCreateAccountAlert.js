@@ -13,7 +13,7 @@ import CreateAccountAlert from './components/CreateAccountAlert';
 function addAlertToContent(original, ...originalArgs) {
     const existing = original(...originalArgs);
 
-    if (!app.forum.attribute('guestPostCount') && !app.forum.attribute('guestVoteCount')) {
+    if (!app.forum.attribute('guestPostCount')) {
         return existing;
     }
 

@@ -1,16 +1,15 @@
 import {extend} from 'flarum/common/extend';
 import app from 'flarum/forum/app';
-import SignUpModal from 'flarum/forum/components/SignUpModal';
 
 /* global m */
 
 export default function () {
-    extend(SignUpModal.prototype, 'oninit', function () {
+    extend('flarum/forum/components/SignUpModal', 'oninit', function () {
         this.importGuestContent = !!app.forum.attribute('guestPostCount');
     });
 
-    extend(SignUpModal.prototype, 'fields', function (items) {
-        if (!app.forum.attribute('guestPostCount') && !app.forum.attribute('guestVoteCount')) {
+    extend('flarum/forum/components/SignUpModal', 'fields', function (items) {
+        if (!app.forum.attribute('guestPostCount')) {
             return;
         }
 
@@ -23,16 +22,13 @@ export default function () {
                 },
                 disabled: this.loading,
             }),
-            app.forum.attribute('guestVoteCount') ? app.translator.trans('guest-posting.forum.modal.import-votes', {
-                postCount: app.forum.attribute('guestPostCount') || '0',
-                voteCount: app.forum.attribute('guestVoteCount'),
-            }) : app.translator.trans('guest-posting.forum.modal.import', {
+            app.translator.trans('guest-posting.forum.modal.import', {
                 count: app.forum.attribute('guestPostCount'),
             }),
         ]))));
     });
 
-    extend(SignUpModal.prototype, 'submitData', function (data) {
+    extend('flarum/forum/components/SignUpModal', 'submitData', function (data) {
         if (this.importGuestContent) {
             data.importGuestContent = this.importGuestContent;
         }

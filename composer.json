@@ -7,11 +7,10 @@
     "type": "flarum-extension",
     "license": "proprietary",
     "require": {
-        "flarum/core": "^1.0"
+        "flarum/core": "^2.0"
     },
     "require-dev": {
-        "flarum/mentions": "*",
-        "fof/polls": "*"
+        "flarum/mentions": "*"
     },
     "authors": [
         {
@@ -36,8 +35,7 @@
                 "color": "#fff"
             },
             "optional-dependencies": [
-                "flarum/mentions",
-                "fof/polls"
+                "flarum/mentions"
             ]
         }
     }

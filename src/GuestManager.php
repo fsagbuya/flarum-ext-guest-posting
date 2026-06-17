@@ -6,8 +6,6 @@ use Flarum\Discussion\Discussion;
 use Flarum\Post\Post;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\User;
-use FoF\Polls\Poll;
-use FoF\Polls\PollVote;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Support\Arr;
 
@@ -16,7 +14,6 @@ class GuestManager
     protected static $username = null;
     protected static $discussionIds = [];
     protected static $postIds = [];
-    protected static $pollVotes = [];
     protected static $dirty = false;
 
     public static function loadSession(Session $session)
@@ -24,7 +21,6 @@ class GuestManager
         self::$username = $session->get('username');
         self::$discussionIds = $session->get('discussionIds', []);
         self::$postIds = $session->get('postIds', []);
-        self::$pollVotes = $session->get('pollVotes', []);
     }
 
     public static function saveSession(Session $session)
@@ -36,7 +32,6 @@ class GuestManager
         $session->put('username', self::$username);
         $session->put('discussionIds', self::$discussionIds);
         $session->put('postIds', self::$postIds);
-        $session->put('pollVotes', self::$pollVotes);
         $session->save();
     }
 
@@ -76,21 +71,6 @@ class GuestManager
         self::$dirty = true;
     }
 
-    public static function getPollVote($pollId)
-    {
-        return Arr::get(self::$pollVotes, $pollId);
-    }
-
-    public static function savePollVote($pollId, $optionId)
-    {
-        if ($optionId) {
-            self::$pollVotes[$pollId] = $optionId;
-        } else {
-            Arr::forget(self::$pollVotes, $pollId);
-        }
-        self::$dirty = true;
-    }
-
     /**
      * Post count for the registration prompt
      * @return int
@@ -98,15 +78,6 @@ class GuestManager
     public static function postCount(): int
     {
         return max(count(self::$discussionIds), count(self::$postIds));
-    }
-
-    /**
-     * Vote count for the registration prompt
-     * @return int
-     */
-    public static function voteCount(): int
-    {
-        return count(self::$pollVotes);
     }
 
     /**
@@ -129,30 +100,6 @@ class GuestManager
             ]);
         }
 
-        foreach (self::$pollVotes as $pollId => $optionId) {
-            /**
-             * @var $poll Poll|null
-             */
-            $poll = Poll::query()->find($pollId);
-
-            // If the poll has been deleted since we voted, just skip
-            if (!$poll) {
-                continue;
-            }
-
-            /**
-             * @var $vote PollVote|null
-             */
-            $vote = $poll->votes()->whereNull('user_id')->where('option_id', $optionId)->first();
-
-            // A vote should always exist, unless some guest votes were manually deleted from the database
-            // Or the vote option was removed
-            if ($vote) {
-                $vote->user_id = $user->id;
-                $vote->save();
-            }
-        }
-
         $user->refreshDiscussionCount();
         $user->refreshCommentCount();
         $user->save();
@@ -162,7 +109,6 @@ class GuestManager
         // We can leave the guest session expire together with the remembered guest username
         self::$discussionIds = [];
         self::$postIds = [];
-        self::$pollVotes = [];
         self::$dirty = true;
     }
 }

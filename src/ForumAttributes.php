@@ -2,7 +2,8 @@
 
 namespace Alter\GuestPosting;
 
-use Flarum\Api\Serializer\ForumSerializer;
+use Flarum\Api\Context;
+use Flarum\Api\Schema;
 use Flarum\Settings\SettingsRepositoryInterface;
 
 class ForumAttributes
@@ -14,19 +15,13 @@ class ForumAttributes
         $this->settings = $settings;
     }
 
-    public function __invoke(ForumSerializer $serializer): array
+    public function __invoke(): array
     {
-        $attributes = [];
-
-        if ($serializer->getActor()->isGuest() && $this->settings->get('guest-posting.enableImport')) {
-            if ($count = GuestManager::postCount()) {
-                $attributes['guestPostCount'] = $count;
-            }
-            if ($count = GuestManager::voteCount()) {
-                $attributes['guestVoteCount'] = $count;
-            }
-        }
-
-        return $attributes;
+        return [
+            Schema\Integer::make('guestPostCount')
+                ->get(fn () => GuestManager::postCount())
+                ->visible(fn ($model, Context $context) => $context->getActor()->isGuest()
+                    && $this->settings->get('guest-posting.enableImport')),
+        ];
     }
 }
